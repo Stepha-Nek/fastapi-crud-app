@@ -63,6 +63,6 @@ app.include_router(vote.router) #this will include the vote router in the app, s
 
 @app.get("/") #@ is a decorator referencing the app, get is http function,/ is the rootpath, slash after the url. it makes the function an API
 def read_root():
-    return {"Hello": "World"}
+    return {"Hello, World!!!"}
 
 
