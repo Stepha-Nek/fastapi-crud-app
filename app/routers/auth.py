@@ -4,7 +4,7 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from .. import schemas, models, utils, oauth2  # Importing schemas, models, and utils from the parent directory
 from ..database import get_db  # Importing the get_db function to get a database session
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])#tags are used to group the operations in the documentation, prefix is used to group all authentication related operations under /auth
+router = APIRouter(tags=["Authentication"])#tags are used to group the operations in the documentation, prefix is used to group all authentication related operations under /auth
 
 
 @router.post("/login", status_code=status.HTTP_200_OK, response_model=schemas.Token)  # Endpoint for user login, post request is ususally used when data has to be sent in one direction, here the user will send login details to the server.

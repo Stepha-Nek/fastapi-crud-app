@@ -1,0 +1,39 @@
+name: Build-and-deploy code
+on: [push, pull_request] #when should it run, it should run when..., can specify multiple events or use the commented method
+  #push:
+    #branches: ["main"] #when code is pushed to main branch
+  #pull_request:
+    #branches: ["main"] #can do it like this
+    #- "main", can also do it like this
+jobs:
+  job1: #name of the job
+    environment: 
+      name: testing
+    env:
+      DATABASE_HOSTNAME=${{ secrets.DATABASE_HOSTNAME }}
+      DATABASE_PORT=${{ secrets.DATABASE_PORT }}
+      DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+      DATABASE_NAME=${{ secrets.DATABASE_NAME }}
+      DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}
+      SECRET_KEY=${{ secrets.SECRET_KEY }}
+      ALGORITHM=${{ secrets.ALGORITHM }}
+      ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: pulling git repo
+        uses: actions/checkout@v2
+      #- name: run some command
+        #run: echo "Building the code..." or you can ,'sudo apt get install' whatever you want
+      - name: Set up Python version 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: update pip
+        run: python -m pip install --upgrade pip
+      - name: Install dependencies
+        run:
+          pip install -r requirements.txt
+      - name: Run tests
+        run: | #this pipe is used if you want to run multiple commands
+          pip install pytest
+          pytest

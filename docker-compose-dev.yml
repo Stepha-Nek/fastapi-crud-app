@@ -1,0 +1,35 @@
+#version: "3.8" //they no longer need to declear the version in the new docker compose
+services:
+  api:
+    build: .
+    depends_on: #means we wamt the postgres to start first before api, api depends on postgres
+      - postgres
+    ports:
+      - "8000:8000"
+    #env_file: can be used  too instead of listing the environment variables one by one like below
+    #  - ./.env #yes this method works with the line above
+    volumes:
+      - ./:/usr/src/app:ro  #mounting the current directory to the /app directory in the container so any changes we make locally reflect in the container
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:   
+      - DATABASE_HOSTNAME=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_PASSWORD=Houdini%%401759
+      - DATABASE_NAME=fastapi
+      - DATABASE_USERNAME=postgres
+      - SECRET_KEY=09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+  postgres:  #no build bc we are using an existing image from docker hub which is advised for databases
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=Houdini%%401759
+      - POSTGRES_DB=fastapi
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_db:/var/lib/postgresql/data #path inside the container where the data we want to store on our local machine incase the container stops is located
+volumes:
+  postgres_db: #named volume for persisting the database data, defined as a global volume outside the postgress so other containers can reference this data
+    

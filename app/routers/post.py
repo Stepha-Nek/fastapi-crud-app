@@ -40,7 +40,7 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), curren
     return new_post # will send back to the poster, used for testing so it returns what was just posted into the array
     
 @router.get("/{id}", response_model=schemas.PostOut)#id is a path parameter that will hold the specific data, to get a particular/specific post
-def get_post(id: int, db: Session = Depends(get_db)): # rether than just id:int,db: Session = Depends(get_db) was added from sqlalchemy, this will get a specific post from the database, id is an integer that will be passed in from the url, db is a session that will be used to query the database, it is a dependency that will be injected into the function
+def get_post(id: int, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)): # rether than just id:int,db: Session = Depends(get_db) was added from sqlalchemy, this will get a specific post from the database, id is an integer that will be passed in from the url, db is a session that will be used to query the database, it is a dependency that will be injected into the function
     #THIS IS THE OLD CODE THAT USES POSTGRESQL DATABASE DRIVER psycopg2, I COMMENTED IT OUT
     #cursor.execute("""SELECT * FROM posts WHERE id = %s""", (str(id),)) #id has to be converted to a string so it can be used in the query, the %s is a placeholder for the id that will be passed in from the url. it will be converted to an integer after as it is a valid id number
     #post = cursor.fetchone() #this will fetch the post with the id that was passed in from the url, it will return a dictionary
@@ -59,14 +59,15 @@ def delete_post(id: int, db: Session = Depends(get_db), current_user:int = Depen
     #deleted_post = cursor.fetchone() #this will fetch the post that was just deleted from the database
     #conn.commit() #this will commit the changes to the database, so that the post is deleted from the database and wont show only on postman when tested
     #NEW CODE USING SQLALCHEMY ORM
-    post = db.query(models.Post).filter(models.Post.id == id) #this will delete the post with the id that was passed in from the url, it will return the post that was deleted, synchronize_session=False is used to avoid a warning that is raised when deleting a post, querying the post to be deleted
-    if post.first() == None: #this will check if the post with the id that was passed in from the url exists, if it does not exist, it will return None
+    post_query = db.query(models.Post).filter(models.Post.id == id) #this will delete the post with the id that was passed in from the url, it will return the post that was deleted, synchronize_session=False is used to avoid a warning that is raised when deleting a post, querying the post to be deleted
+    post = post_query.first() #this will get the first post that matches the filter, it will return a Post object or None
+    if post == None: #this will check if the post with the id that was passed in from the url exists, if it does not exist, it will return None
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='post with id: {id} does not exsist')#if the id selected isnt in the array or has been remnoved before
     if post.owner_id != current_user.id: #this will check if the user that is trying to delete the post is the owner of the post, if not, it will raise an exception
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested action") #403 means forbidden, the user is not allowed to delete the post if he is not the owner of the post
-    post.delete(synchronize_session=False) #this will delete the post from the database if it exsists, synchronize_session=False is used to avoid a warning that is raised when deleting a post
+    post_query.delete(synchronize_session=False) #this will delete the post from the database if it exsists, synchronize_session=False is used to avoid a warning that is raised when deleting a post
     db.commit() #this will commit the changes to the database, so that the post is deleted from the database and wont show only on postman when tested. this is similar to conn.commit() but this is for the sqlalchemy session
-    #return Response(status_code=status.HTTP_204_NO_CONTENT)# no need to return data if yiu are deleting something, it will throw an error.
+    return Response(status_code=status.HTTP_204_NO_CONTENT)# no need to return data if yiu are deleting something, it will throw an error.
 
 @router.put("/{id}", response_model=schemas.Post)#put method updates and shows all the fields, so if you update title, content will still show cos it will show how everything looks like after updating
 def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends(get_db), current_user:int = Depends(oauth2.get_current_user)):# class post is imported from schemas.py, it is a pydantic model that will be used to validate the data that is passed in from the request body, id is an integer that will be passed in from the url, updated_post is a Post object that will be passed in from the request body, db: Session = Depends(get_db) is part of the new sqlalchemy code, before it was just update_post(id:int, updated_post:post), this will update a specific post in the database, it will return the updated post
