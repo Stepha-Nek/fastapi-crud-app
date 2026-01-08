@@ -23,7 +23,7 @@ jobs:
         image: postgres #can specify version too like postgres:13, not specifying uses the latest version
         env:
           POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.DATABASE_NAME }}_test #_ test to differentiate from production db, so if database name is steph, it will be steph_test
+          POSTGRES_DB: ${{ secrets.DATABASE_NAME }}
         ports:
           - 5432:5432 #ports have to be hardcoded here, cant use env variables
         options: >- #important to use >- here for multiline strings, the > means new lines will be converted to spaces and - means trailing new line will be removed
