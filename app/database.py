@@ -6,6 +6,8 @@ from psycopg2.extras import RealDictCursor
 import time #importing time so we can use it to wait for a few seconds before trying to connect to the database again if the connection fails
 from .config import settings
 
+
+
 SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
@@ -30,7 +32,7 @@ def get_db():
             port="5432", #default port for postgres
             database="fastapi",
             user='postgres',
-            password='Houdini@1759',
+            password='****@****',
             cursor_factory=RealDictCursor) #this will allow us to get the data in dictionary format like the columns etc
         cursor = conn.cursor() #this will allow us to execute queries on the database
         print("Connection to database was successful")

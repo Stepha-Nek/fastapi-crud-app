@@ -11,6 +11,9 @@ from app.database import Base  #importing Base from database.py file to create t
 from app.oauth2 import create_access_token
 from app import models
 from alembic import command  #importing command from alembic to run the migrations on the testing database
+from urllib.parse import quote_plus
+
+password = quote_plus(settings.database_password)  #encoding the password to handle special characters like @, #, $, etc.
 
 # starting here is database setup for testing purposes
 #SQLALCHEMY_DATABASE_URL = "postgresql://postgres:Houdini@1759@localhost:5432/fastapi_test"  # use this or add _test to the one below, i used the one below .database url for the testing database, test database is fastapi_test cos databse name is fastapi in main app

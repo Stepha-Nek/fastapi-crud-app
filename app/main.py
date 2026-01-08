@@ -32,7 +32,7 @@ app.add_middleware( #MIDDLEWARE IS A SOFTWARE THAT ACTS AS A BRIDGE BETWEEN AN O
             port="5432", #default port for postgres
             database="fastapi",
             user='postgres',
-            password='Houdini@1759',
+            password='****@****',
             cursor_factory=RealDictCursor) #this will allow us to get the data in dictionary format like the columns etc
         cursor = conn.cursor() #this will allow us to execute queries on the database
         print("Connection to database was successful")
