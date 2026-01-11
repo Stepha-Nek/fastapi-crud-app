@@ -8,6 +8,7 @@ from .routers import post, auth, user, vote #importing the user and post routers
 from .config import settings #importing settings from the config module, this is not used in this code but it is imported so you can use it later on. config.py contains the configuration settings for the application.
 from fastapi.middleware.cors import CORSMiddleware #FOR CORS
 
+
 #print("What is in user module?", dir(user))
 #print("Creating tables...")
 #Base.metadata.create_all(bind=engine) #this will create all the tables in the database that are defined in the models.py file, it will create the posts table in the database if it does not exist already.
@@ -63,6 +64,6 @@ app.include_router(vote.router) #this will include the vote router in the app, s
 
 @app.get("/") #@ is a decorator referencing the app, get is http function,/ is the rootpath, slash after the url. it makes the function an API
 def root():
-    return {"message": "Hello World!!!"}
+    return {"message": "Hello World!!!, deploying with github actions"} #this will return a json response with the message "Hello World" when the root path is accessed
 
 

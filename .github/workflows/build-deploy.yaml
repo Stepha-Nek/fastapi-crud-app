@@ -6,7 +6,7 @@ on: [push, pull_request] #when should it run, it should run when..., can specify
     #branches: ["main"] #can do it like this
     #- "main", can also do it like this
 jobs:
-  job1: #name of the job
+  build: #name of the job
     environment: 
       name: testing
     env:
@@ -50,3 +50,55 @@ jobs:
         run: | #this pipe is used if you want to run multiple commands
           pip install pytest
           pytest
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push Docker image
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi:latest # should match this 'stephanek1993/fastapi:tagname' , got this command from my dockerhub repo for fastapi
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+
+  deploy: #second job to push the changes made in build to production. first job was build.
+    needs: build #because github actions runs all jos in parallel by default(at the same time), this line makes sure deploy job runs only after build job is complete
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      #url: http://your-production-url.com  # replace with your production URL
+    steps:
+      - name: pulling git repo
+        uses: actions/checkout@v2
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }} #must be unique name across heroku
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          
+      - name: Deploy to ubuntu server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          password: ${{ secrets.PROD_PASSWORD }}
+          script: |
+            cd app/src
+            git pull
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S systemctl restart api 
+          
